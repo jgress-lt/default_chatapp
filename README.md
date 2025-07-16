@@ -38,6 +38,7 @@ default_chatapp/
 - **Modern UI**: Clean design with light/dark theme toggle
 - **Real-time Streaming**: Live response streaming from Azure OpenAI via Semantic Kernel
 - **Automatic Function Calling**: AI automatically detects when to call functions based on user intent
+- **Function Call Transparency**: Shows which functions were called during conversations with execution metadata
 - **Local Storage**: Chat history persisted in browser
 - **Smart Input**: Enter to send, Shift+Enter for new lines
 - **Clear History**: One-click chat history clearing
@@ -178,6 +179,50 @@ npm run lint            # Lint code with ESLint
 cd server
 python main.py          # Start FastAPI server
 ```
+
+## Function Call Tracking
+
+This application includes comprehensive function call tracking that provides transparency about which functions were executed during conversations.
+
+### How Function Tracking Works
+
+1. **Automatic Detection**: The system automatically tracks when functions are called by the AI during conversations
+2. **Execution Metadata**: Captures function name, plugin name, parameters, results, and execution time
+3. **Streaming Integration**: Function call information is sent as metadata in the final chunk of streaming responses
+4. **Real-time Display**: Function calls are displayed in the UI immediately after the AI response completes
+
+### Function Call Information
+
+For each function call, the system tracks:
+- **Function Name**: The specific function that was executed
+- **Plugin Name**: Which plugin the function belongs to
+- **Parameters**: The parameters passed to the function
+- **Result**: The return value from the function
+- **Execution Time**: How long the function took to execute (in milliseconds)
+- **Call Order**: The sequence in which functions were called
+- **Timestamp**: When the function was executed
+
+### Visual Display
+
+Function calls are displayed in a blue info box below the AI response showing:
+- Total number of functions called
+- List of executed functions with plugin.function() format
+- Execution time for each function call
+- Clear visual indication that functions were used
+
+### Example Function Calls
+
+Try these questions to see function calling in action:
+- "What time is it?" → Calls `TestPlugin.get_current_time()`
+- "What's 15 + 27?" → Calls `TestPlugin.calculate_simple_math()`
+- "Show me plugin stats" → Calls `TestPlugin.get_plugin_stats()`
+
+### Technical Implementation
+
+- **Backend**: Function call tracker service captures execution metadata
+- **Streaming**: Metadata sent as final chunk before completion signal
+- **Frontend**: Service parser handles function metadata separately from content
+- **UI**: React component displays function information with animations
 
 ## Usage
 

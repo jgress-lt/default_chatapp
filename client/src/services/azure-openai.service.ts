@@ -38,11 +38,11 @@ export class AzureOpenAIService {
 
   /**
    * Parses Server-Sent Events (SSE) stream from Azure OpenAI
-   * and yields content deltas for real-time display
+   * and yields content deltas and function call metadata for real-time display
    */
   static async* parseSSEStream(
     stream: ReadableStream<Uint8Array>
-  ): AsyncGenerator<string, void, unknown> {
+  ): AsyncGenerator<{ content?: string; functionCalls?: any }, void, unknown> {
     const reader = stream.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
@@ -73,7 +73,13 @@ export class AzureOpenAIService {
               
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) {
-                yield content;
+                yield { content };
+              }
+              
+              // Handle function call metadata
+              const functionCalls = parsed.choices?.[0]?.delta?.function_calls_metadata;
+              if (functionCalls) {
+                yield { functionCalls };
               }
               
               const finishReason = parsed.choices?.[0]?.finish_reason;

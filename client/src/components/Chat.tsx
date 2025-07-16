@@ -16,6 +16,7 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState<ChatMessage | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [lastFunctionCalls, setLastFunctionCalls] = useState<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -55,6 +56,7 @@ export default function Chat() {
     setInput('');
     setIsLoading(true);
     setError(null);
+    setLastFunctionCalls(null);
 
     try {
       // Start streaming response
@@ -71,17 +73,30 @@ export default function Chat() {
       setStreamingMessage(assistantMessage);
       
       let fullContent = '';
+      let functionCallData = null;
       
       // Process the stream
       for await (const chunk of AzureOpenAIService.parseSSEStream(stream)) {
-        fullContent += chunk;
-        setStreamingMessage(prev => 
-          prev ? { ...prev, content: fullContent } : null
-        );
+        if (chunk.content) {
+          fullContent += chunk.content;
+          setStreamingMessage(prev => 
+            prev ? { ...prev, content: fullContent } : null
+          );
+        }
+        
+        if (chunk.functionCalls) {
+          functionCallData = chunk.functionCalls;
+          setLastFunctionCalls(functionCallData);
+        }
       }
       
       // Finalize the message
-      const finalMessage = { ...assistantMessage, content: fullContent };
+      const finalMessage = { 
+        ...assistantMessage, 
+        content: fullContent,
+        // Add function calls as metadata if needed
+        metadata: functionCallData ? { functionCalls: functionCallData } : undefined
+      };
       setMessages(prev => [...prev, finalMessage]);
       setStreamingMessage(null);
       
@@ -110,6 +125,7 @@ export default function Chat() {
   const clearChatHistory = () => {
     setMessages([]);
     setStreamingMessage(null);
+    setLastFunctionCalls(null);
     ChatStorageService.clearChatHistory();
   };
 
@@ -130,6 +146,33 @@ export default function Chat() {
             />
           )}
         </AnimatePresence>
+        
+        {/* Function calls display */}
+        {lastFunctionCalls && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3 text-sm"
+          >
+            <div className="font-medium text-blue-800 dark:text-blue-200 mb-2">
+              🔧 Functions Called ({lastFunctionCalls.total_function_calls})
+            </div>
+            <div className="space-y-1">
+              {lastFunctionCalls.function_calls?.map((call: any, index: number) => (
+                <div key={index} className="text-blue-700 dark:text-blue-300">
+                  <span className="font-mono">
+                    {call.plugin_name}.{call.function_name}()
+                  </span>
+                  {call.execution_time && (
+                    <span className="text-xs text-blue-500 ml-2">
+                      ({(call.execution_time * 1000).toFixed(1)}ms)
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
         
         {/* Typing indicator */}
         {isLoading && !streamingMessage && (

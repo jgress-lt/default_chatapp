@@ -120,3 +120,58 @@ Available Test Functions:
 ```
 
 All logs appear in the terminal when you run the server, making it easy to see what users are asking and which functions get automatically triggered!
+
+## Function Call Tracking & Transparency
+
+The application now includes advanced function call tracking that provides complete transparency about function executions during conversations.
+
+### Real-Time Function Metadata
+
+When functions are called, the system captures and displays:
+- **Function execution details** in the server logs
+- **Visual function call indicators** in the chat UI
+- **Execution performance metrics** for each function call
+- **Complete function metadata** sent to the frontend
+
+### Function Call Display
+
+After each AI response that includes function calls, users will see:
+- A blue information box showing "🔧 Functions Called (N)"
+- List of executed functions in `PluginName.functionName()` format
+- Execution time for each function call
+- Clear visual indication of backend processing
+
+### Example with Tracking
+
+**User:** "What's 15 multiplied by 8?"
+
+**Backend Logs:**
+```
+FUNCTION CALL TRACKING STARTED - Request ID: req_123
+FUNCTION CALLED: calculate_simple_math() - Call #1, Operation: 15.0 multiply 8.0
+FUNCTION CALL RECORDED: TestPlugin.calculate_simple_math() - Call #1
+FUNCTION RESULT: calculate_simple_math() returned '15.0 multiply 8.0 = 120.0'
+FUNCTION CALL METADATA SENT - Request ID: req_123, Functions called: 1
+```
+
+**Frontend Display:**
+- AI response: "15 multiplied by 8 equals 120."
+- Function metadata box: "🔧 Functions Called (1)"
+  - `TestPlugin.calculate_simple_math()` (2.3ms)
+
+### Function Tracking Benefits
+
+1. **Complete Transparency**: Users see exactly which functions were executed
+2. **Performance Monitoring**: Execution times help identify slow functions  
+3. **Debugging Aid**: Clear tracking of function calls for troubleshooting
+4. **User Education**: Helps users understand how the AI uses functions
+5. **Request Correlation**: Each request has a unique ID for tracking
+
+### Technical Implementation
+
+- **Function Call Tracker**: Captures execution metadata in real-time
+- **Streaming Integration**: Metadata sent as final chunk before completion
+- **Frontend Parser**: Handles function metadata separately from content
+- **UI Components**: React components display function information with animations
+
+This feature makes the "black box" of function calling transparent, showing users exactly how their questions trigger backend functions and how long they take to execute.

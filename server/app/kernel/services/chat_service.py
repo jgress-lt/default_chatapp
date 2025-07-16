@@ -86,6 +86,15 @@ class SemanticKernelChatService:
         start_time = time.time()
         chunk_count = 0
         
+        # Initialize function call tracking
+        try:
+            from app.kernel.services.function_call_tracker import get_function_call_tracker
+            tracker = get_function_call_tracker()
+            tracker.start_tracking(request_id)
+        except Exception as e:
+            log.warning("Failed to initialize function call tracking: %s", e)
+            tracker = None
+        
         try:
             # Log user questions for monitoring
             user_messages = [msg for msg in messages if msg.get("role") == "user"]
@@ -141,6 +150,24 @@ class SemanticKernelChatService:
                     }
                     yield f"data: {json.dumps(payload)}\n\n".encode("utf-8")
             
+            # Send function call metadata if any functions were called
+            if tracker and tracker.has_function_calls():
+                function_summary = tracker.get_summary()
+                metadata_payload = {
+                    "choices": [
+                        {
+                            "delta": {
+                                "function_calls_metadata": function_summary
+                            },
+                            "finish_reason": None,
+                        }
+                    ]
+                }
+                yield f"data: {json.dumps(metadata_payload)}\n\n".encode("utf-8")
+                
+                log.info("FUNCTION CALL METADATA SENT - Request ID: %s, Functions called: %d", 
+                        request_id, len(tracker.function_calls))
+            
             # Send completion signal
             completion_payload = {
                 "choices": [
@@ -177,6 +204,10 @@ class SemanticKernelChatService:
                 "request_id": request_id
             }
             yield f"data: {json.dumps(error_payload)}\n\n".encode("utf-8")
+        finally:
+            # Clear tracking data
+            if tracker:
+                tracker.clear()
     
     async def complete_chat(
         self,
