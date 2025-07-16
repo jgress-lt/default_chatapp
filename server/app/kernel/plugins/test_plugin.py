@@ -49,8 +49,8 @@ class TestPlugin:
             self.call_count += 1
             self.last_called = now
             
-            log.info("🟢 FUNCTION CALLED: get_current_time() - Call #%d", self.call_count)
-            log.info("📅 CURRENT TIME REQUEST - Format: %s", format_type)
+            log.info("FUNCTION CALLED: get_current_time() - Call #%d", self.call_count)
+            log.info("CURRENT TIME REQUEST - Format: %s", format_type)
             
             if format_type == "date":
                 result = now.strftime("%Y-%m-%d")
@@ -61,7 +61,7 @@ class TestPlugin:
             else:  # full
                 result = now.strftime("%Y-%m-%d %H:%M:%S")
             
-            log.info("✅ FUNCTION RESULT: get_current_time() returned '%s'", result)
+            log.info("FUNCTION RESULT: get_current_time() returned '%s'", result)
             return f"Current {format_type}: {result}"
             
         except Exception as exc:
@@ -93,7 +93,7 @@ class TestPlugin:
             self.call_count += 1
             self.last_called = datetime.now()
             
-            log.info("🟢 FUNCTION CALLED: calculate_simple_math() - Call #%d, Operation: %s %s %s", 
+            log.info("FUNCTION CALLED: calculate_simple_math() - Call #%d, Operation: %s %s %s", 
                     self.call_count, first_number, operation, second_number)
             
             if operation == "add":
@@ -104,15 +104,15 @@ class TestPlugin:
                 result = first_number * second_number
             elif operation == "divide":
                 if second_number == 0:
-                    log.warning("⚠️ FUNCTION ERROR: Division by zero attempted")
+                    log.warning("FUNCTION ERROR: Division by zero attempted")
                     return "Error: Cannot divide by zero"
                 result = first_number / second_number
             else:
-                log.warning("⚠️ FUNCTION ERROR: Unknown operation '%s'", operation)
+                log.warning("FUNCTION ERROR: Unknown operation '%s'", operation)
                 return f"Error: Unknown operation '{operation}'. Use: add, subtract, multiply, divide"
             
             response = f"{first_number} {operation} {second_number} = {result}"
-            log.info("✅ FUNCTION RESULT: calculate_simple_math() returned '%s'", response)
+            log.info("FUNCTION RESULT: calculate_simple_math() returned '%s'", response)
             return response
             
         except Exception as exc:
@@ -131,7 +131,7 @@ class TestPlugin:
             JSON string with plugin statistics
         """
         try:
-            log.info("🟢 FUNCTION CALLED: get_plugin_stats() - Call #%d", self.call_count + 1)
+            log.info("FUNCTION CALLED: get_plugin_stats() - Call #%d", self.call_count + 1)
             
             stats = {
                 "total_calls": self.call_count,
@@ -142,7 +142,7 @@ class TestPlugin:
             }
             
             result = json.dumps(stats, indent=2)
-            log.info("✅ FUNCTION RESULT: get_plugin_stats() returned stats for %d total calls", self.call_count)
+            log.info("FUNCTION RESULT: get_plugin_stats() returned stats for %d total calls", self.call_count)
             return result
             
         except Exception as exc:

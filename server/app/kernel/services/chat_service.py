@@ -45,18 +45,18 @@ class SemanticKernelChatService:
             
         self.chat_service = KernelFactory.get_chat_service(self.kernel)
         
-        log.info("🤖 Semantic Kernel Chat Service initialized with automatic function calling")
-        log.info("🔧 Function calling behavior: Auto() - AI will automatically detect and call functions")
+        log.info("Semantic Kernel Chat Service initialized with automatic function calling")
+        log.info("Function calling behavior: Auto() - AI will automatically detect and call functions")
         
         # Log available plugins
         try:
             plugin_names = list(self.kernel.plugins.keys()) if hasattr(self.kernel.plugins, 'keys') else []
             if plugin_names:
-                log.info("📦 Loaded plugins: %s", plugin_names)
+                log.info("Loaded plugins: %s", plugin_names)
             else:
-                log.warning("⚠️ No plugins loaded - function calling may not work")
+                log.warning("No plugins loaded - function calling may not work")
         except Exception as e:
-            log.warning("⚠️ Could not check plugins: %s", e)
+            log.warning("Could not check plugins: %s", e)
     
     async def stream_chat(
         self,
@@ -92,7 +92,7 @@ class SemanticKernelChatService:
             if user_messages:
                 latest_user_msg = user_messages[-1].get("content", "")
                 log.info(
-                    "🔵 USER QUESTION (STREAMING) - Request ID: %s, Content: '%s'",
+                    "USER QUESTION (STREAMING) - Request ID: %s, Content: '%s'",
                     request_id,
                     latest_user_msg[:200] + "..." if len(latest_user_msg) > 200 else latest_user_msg
                 )
@@ -108,7 +108,7 @@ class SemanticKernelChatService:
                 function_choice_behavior=FunctionChoiceBehavior.Auto(),
             )
             
-            log.info("🤖 FUNCTION CALLING ENABLED - Auto function calling active for streaming request")
+            log.info("FUNCTION CALLING ENABLED - Auto function calling active for streaming request")
             
             # Get streaming response
             stream = self.chat_service.get_streaming_chat_message_contents(
@@ -211,7 +211,7 @@ class SemanticKernelChatService:
             if user_messages:
                 latest_user_msg = user_messages[-1].get("content", "")
                 log.info(
-                    "🔵 USER QUESTION (NON-STREAMING) - Request ID: %s, Content: '%s'",
+                    "USER QUESTION (NON-STREAMING) - Request ID: %s, Content: '%s'",
                     request_id,
                     latest_user_msg[:200] + "..." if len(latest_user_msg) > 200 else latest_user_msg
                 )
@@ -227,7 +227,7 @@ class SemanticKernelChatService:
                 function_choice_behavior=FunctionChoiceBehavior.Auto(),
             )
             
-            log.info("🤖 FUNCTION CALLING ENABLED - Auto function calling active for non-streaming request")
+            log.info("FUNCTION CALLING ENABLED - Auto function calling active for non-streaming request")
             
             # Get completion response
             response = await self.chat_service.get_chat_message_contents(

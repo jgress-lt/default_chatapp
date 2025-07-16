@@ -24,23 +24,23 @@ load_dotenv()
 log = logging.getLogger("backend.app")
 
 # Initialize the Semantic Kernel chat service
-log.info("🔄 INITIALIZING SEMANTIC KERNEL CHAT SERVICE...")
+log.info("INITIALIZING SEMANTIC KERNEL CHAT SERVICE...")
 chat_service = get_chat_service()
 
 # Log startup information
-log.info("🔥 SEMANTIC KERNEL SERVICE READY")
-log.info("⚡ Auto Function Calling: ENABLED")
-log.info("📝 Available Test Functions:")
-log.info("   🕐 get_current_time() - Triggers on time/date questions")
-log.info("   🧮 calculate_simple_math() - Triggers on math questions")  
-log.info("   📊 get_plugin_stats() - Triggers on plugin usage questions")
-log.info("💡 Example questions: 'What time is it?', 'What's 5+3?', 'Show plugin stats'")
+log.info("SEMANTIC KERNEL SERVICE READY")
+log.info("Auto Function Calling: ENABLED")
+log.info("Available Test Functions:")
+log.info("   get_current_time() - Triggers on time/date questions")
+log.info("   calculate_simple_math() - Triggers on math questions")  
+log.info("   get_plugin_stats() - Triggers on plugin usage questions")
+log.info("Example questions: 'What time is it?', 'What's 5+3?', 'Show plugin stats'")
 
 # Force initialization to ensure plugins are loaded
-log.info("🔧 FORCING KERNEL AND PLUGIN INITIALIZATION...")
+log.info("FORCING KERNEL AND PLUGIN INITIALIZATION...")
 if hasattr(chat_service, 'kernel') and hasattr(chat_service.kernel, 'plugins'):
     plugin_names = list(chat_service.kernel.plugins.keys()) if hasattr(chat_service.kernel.plugins, 'keys') else []
-    log.info("🔌 LOADED KERNEL PLUGINS: %s", plugin_names)
+    log.info("LOADED KERNEL PLUGINS: %s", plugin_names)
     
     # Log each plugin's functions
     for plugin_name in plugin_names:
@@ -48,11 +48,11 @@ if hasattr(chat_service, 'kernel') and hasattr(chat_service.kernel, 'plugins'):
             plugin = chat_service.kernel.plugins[plugin_name]
             if hasattr(plugin, '__dict__'):
                 functions = [attr for attr in dir(plugin) if not attr.startswith('_') and callable(getattr(plugin, attr))]
-                log.info("   📦 %s functions: %s", plugin_name, functions[:5])  # Limit to first 5
+                log.info("   %s functions: %s", plugin_name, functions[:5])  # Limit to first 5
         except Exception as e:
-            log.warning("   ⚠️ Could not inspect plugin %s: %s", plugin_name, e)
+            log.warning("   Could not inspect plugin %s: %s", plugin_name, e)
 else:
-    log.warning("⚠️ KERNEL OR PLUGINS NOT ACCESSIBLE - Function calling may not work")
+    log.warning("KERNEL OR PLUGINS NOT ACCESSIBLE - Function calling may not work")
 
 async def azure_stream(
     msgs: List[Dict[str, str]],
@@ -76,7 +76,7 @@ async def azure_stream(
         request_id = str(uuid.uuid4())
     
     log.info(
-        "🚀 STARTING STREAMING CHAT - Request ID: %s, Messages: %d, Max tokens: %d, Temperature: %.2f",
+        "STARTING STREAMING CHAT - Request ID: %s, Messages: %d, Max tokens: %d, Temperature: %.2f",
         request_id,
         len(msgs),
         max_tokens,
@@ -85,16 +85,16 @@ async def azure_stream(
     
     # Log conversation context
     if msgs:
-        log.info("💬 CONVERSATION CONTEXT: %d total messages in history", len(msgs))
+        log.info("CONVERSATION CONTEXT: %d total messages in history", len(msgs))
         user_msgs = [m for m in msgs if m.get("role") == "user"]
         assistant_msgs = [m for m in msgs if m.get("role") == "assistant"]
-        log.info("📊 MESSAGE BREAKDOWN: %d user messages, %d assistant messages", 
+        log.info("MESSAGE BREAKDOWN: %d user messages, %d assistant messages", 
                 len(user_msgs), len(assistant_msgs))
         
         # Log the latest user message to see what the user is asking
         if user_msgs:
             latest_user_msg = user_msgs[-1].get("content", "")
-            log.info("🔵 LATEST USER QUESTION: '%s'", 
+            log.info("LATEST USER QUESTION: '%s'", 
                     latest_user_msg[:200] + "..." if len(latest_user_msg) > 200 else latest_user_msg)
     
     try:
@@ -108,7 +108,7 @@ async def azure_stream(
             yield chunk
             
     except Exception as exc:
-        log.error("❌ STREAMING ERROR - Request ID: %s, Error: %s", request_id, exc)
+        log.error("STREAMING ERROR - Request ID: %s, Error: %s", request_id, exc)
         
         # Send error response in the expected format
         error_payload = {
@@ -118,7 +118,7 @@ async def azure_stream(
         }
         yield f"data: {json.dumps(error_payload)}\n\n".encode("utf-8")
     
-    log.info("✅ STREAMING COMPLETED - Request ID: %s", request_id)
+    log.info("STREAMING COMPLETED - Request ID: %s", request_id)
 
 async def non_stream_chat(
     msgs: List[Dict[str, str]],
@@ -145,7 +145,7 @@ async def non_stream_chat(
         request_id = str(uuid.uuid4())
     
     log.info(
-        "🚀 STARTING NON-STREAMING CHAT - Request ID: %s, Messages: %d, Max tokens: %d, Temperature: %.2f",
+        "STARTING NON-STREAMING CHAT - Request ID: %s, Messages: %d, Max tokens: %d, Temperature: %.2f",
         request_id,
         len(msgs),
         max_tokens,
@@ -154,16 +154,16 @@ async def non_stream_chat(
     
     # Log conversation context
     if msgs:
-        log.info("💬 CONVERSATION CONTEXT: %d total messages in history", len(msgs))
+        log.info("CONVERSATION CONTEXT: %d total messages in history", len(msgs))
         user_msgs = [m for m in msgs if m.get("role") == "user"]
         assistant_msgs = [m for m in msgs if m.get("role") == "assistant"]
-        log.info("📊 MESSAGE BREAKDOWN: %d user messages, %d assistant messages", 
+        log.info("MESSAGE BREAKDOWN: %d user messages, %d assistant messages", 
                 len(user_msgs), len(assistant_msgs))
                 
         # Log the latest user message to see what the user is asking
         if user_msgs:
             latest_user_msg = user_msgs[-1].get("content", "")
-            log.info("🔵 LATEST USER QUESTION: '%s'", 
+            log.info("LATEST USER QUESTION: '%s'", 
                     latest_user_msg[:200] + "..." if len(latest_user_msg) > 200 else latest_user_msg)
     
     try:
@@ -175,11 +175,11 @@ async def non_stream_chat(
             request_id=request_id,
         )
         
-        log.info("✅ NON-STREAMING COMPLETED - Request ID: %s", request_id)
+        log.info("NON-STREAMING COMPLETED - Request ID: %s", request_id)
         return result
         
     except Exception as exc:
-        log.error("❌ NON-STREAMING ERROR - Request ID: %s, Error: %s", request_id, exc)
+        log.error("NON-STREAMING ERROR - Request ID: %s, Error: %s", request_id, exc)
         raise exc
 
 # Backward compatibility functions (keeping the same interface)

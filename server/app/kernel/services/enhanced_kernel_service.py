@@ -39,8 +39,8 @@ class EnhancedKernelService:
         # Initialize and register default plugins
         self._register_default_plugins()
         
-        log.info("🔧 Enhanced Kernel Service initialized with %d plugins", len(self.plugins))
-        log.info("📋 Available plugins: %s", list(self.plugins.keys()))
+        log.info("Enhanced Kernel Service initialized with %d plugins", len(self.plugins))
+        log.info("Available plugins: %s", list(self.plugins.keys()))
     
     def _register_default_plugins(self) -> None:
         """Register the default plugins with the kernel."""
@@ -50,12 +50,12 @@ class EnhancedKernelService:
             self.kernel.add_plugin(test_plugin, plugin_name="TestPlugin")
             self.plugins["TestPlugin"] = test_plugin
             
-            log.info("🔌 PLUGIN REGISTERED: TestPlugin with functions: %s", 
+            log.info("PLUGIN REGISTERED: TestPlugin with functions: %s", 
                     ["get_current_time", "calculate_simple_math", "get_plugin_stats"])
-            log.info("✅ Default plugins registered successfully")
+            log.info("Default plugins registered successfully")
             
         except Exception as exc:
-            log.error("❌ Failed to register default plugins: %s", exc)
+            log.error("Failed to register default plugins: %s", exc)
             raise
     
     def add_plugin(self, plugin: Any, plugin_name: str) -> bool:
