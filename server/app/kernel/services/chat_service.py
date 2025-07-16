@@ -303,8 +303,3 @@ def get_chat_service() -> SemanticKernelChatService:
         _service_instance = SemanticKernelChatService()
     
     return _service_instance
-
-def reset_chat_service() -> None:
-    """Reset the global service instance (useful for testing)."""
-    global _service_instance
-    _service_instance = None

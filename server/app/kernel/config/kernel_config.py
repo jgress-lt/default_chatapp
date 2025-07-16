@@ -129,8 +129,3 @@ def get_kernel() -> Kernel:
         _kernel_instance = KernelFactory.create_kernel(config)
     
     return _kernel_instance
-
-def reset_kernel() -> None:
-    """Reset the global kernel instance (useful for testing)."""
-    global _kernel_instance
-    _kernel_instance = None

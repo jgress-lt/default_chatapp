@@ -182,19 +182,6 @@ async def non_stream_chat(
         log.error("NON-STREAMING ERROR - Request ID: %s, Error: %s", request_id, exc)
         raise exc
 
-# Backward compatibility functions (keeping the same interface)
-def azure_stream_sync(*args, **kwargs):
-    """Synchronous wrapper for azure_stream (for backward compatibility)."""
-    import asyncio
-    
-    async def _async_wrapper():
-        async for chunk in azure_stream(*args, **kwargs):
-            yield chunk
-    
-    # Note: This is a simplified sync wrapper. In production, you might want
-    # to handle this differently based on your specific needs.
-    return _async_wrapper()
-
 # Additional utility functions for Semantic Kernel integration
 async def get_kernel_info() -> Dict[str, str]:
     """
@@ -225,20 +212,3 @@ async def get_kernel_info() -> Dict[str, str]:
             "kernel_initialized": "false",
             "error": str(exc)
         }
-
-async def validate_kernel_health() -> bool:
-    """
-    Validate that the Semantic Kernel is healthy and ready to use.
-    
-    Returns:
-        True if kernel is healthy, False otherwise
-    """
-    try:
-        # Simple health check - try to create a basic chat history
-        test_messages = [{"role": "user", "content": "test"}]
-        chat_history = chat_service._create_chat_history(test_messages)
-        return len(chat_history.messages) > 0
-        
-    except Exception as exc:
-        log.error("Kernel health check failed: %s", exc)
-        return False

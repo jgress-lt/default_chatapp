@@ -80,47 +80,6 @@ class EnhancedKernelService:
             log.error("Failed to add plugin '%s': %s", plugin_name, exc)
             return False
     
-    async def invoke_function(
-        self, 
-        plugin_name: str, 
-        function_name: str, 
-        **kwargs
-    ) -> Optional[str]:
-        """
-        Invoke a specific function from a plugin.
-        
-        Args:
-            plugin_name: Name of the plugin
-            function_name: Name of the function to invoke
-            **kwargs: Arguments to pass to the function
-            
-        Returns:
-            Function result as string, or None if invocation failed
-        """
-        try:
-            # Get the function from the kernel
-            function_to_invoke = self.kernel.plugins[plugin_name][function_name]
-            
-            # Invoke the function
-            result = await self.kernel.invoke(function_to_invoke, **kwargs)
-            
-            log.info(
-                "Function invoked successfully: %s.%s", 
-                plugin_name, 
-                function_name
-            )
-            
-            return str(result.value) if result else None
-            
-        except Exception as exc:
-            log.error(
-                "Failed to invoke function %s.%s: %s", 
-                plugin_name, 
-                function_name, 
-                exc
-            )
-            return None
-    
     async def validate_health(self) -> bool:
         """
         Perform a comprehensive health check of the kernel and plugins.
@@ -172,8 +131,3 @@ def get_enhanced_kernel_service() -> EnhancedKernelService:
         _enhanced_service = EnhancedKernelService()
     
     return _enhanced_service
-
-def reset_enhanced_service() -> None:
-    """Reset the global enhanced service instance."""
-    global _enhanced_service
-    _enhanced_service = None

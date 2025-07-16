@@ -107,8 +107,6 @@ export default function Chat() {
     }
   };
 
-  const clearError = () => setError(null);
-
   const clearChatHistory = () => {
     setMessages([]);
     setStreamingMessage(null);
@@ -167,7 +165,7 @@ export default function Chat() {
             <div className="flex justify-between items-start">
               <p className="text-red-600 dark:text-red-300 text-sm">{error}</p>
               <button
-                onClick={clearError}
+                onClick={() => setError(null)}
                 className="text-red-400 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
               >
                 ×

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse, JSONResponse
 from typing import List
 from pydantic import BaseModel
-from app.services.semantic_kernel_service import azure_stream, non_stream_chat, get_kernel_info, validate_kernel_health
+from app.services.semantic_kernel_service import azure_stream, non_stream_chat, get_kernel_info
 import time
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
@@ -50,28 +50,6 @@ async def chat(request: ChatRequest, req: Request):
         return JSONResponse(result)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-
-@router.get("/health")
-async def health_check():
-    """Check the health status of the Semantic Kernel service."""
-    try:
-        is_healthy = await validate_kernel_health()
-        kernel_info = await get_kernel_info()
-        
-        return JSONResponse({
-            "status": "healthy" if is_healthy else "unhealthy",
-            "kernel_info": kernel_info,
-            "timestamp": time.time()
-        })
-    except Exception as exc:
-        return JSONResponse(
-            status_code=500,
-            content={
-                "status": "error",
-                "error": str(exc),
-                "timestamp": time.time()
-            }
-        )
 
 @router.get("/kernel-info")
 async def kernel_info():
