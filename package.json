@@ -1,0 +1,17 @@
+{
+  "name": "azure-chat-lite",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run python-server\" \"npm run client\"",
+    "client": "cd client && npm run dev",
+    "python-server": "cd server && python main.py",
+    "install-all": "npm install && cd client && npm install && cd ../server && pip install -r requirements.txt",
+    "build": "cd client && npm run build",
+    "preview": "cd client && npm run preview"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

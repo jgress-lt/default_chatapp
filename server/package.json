@@ -1,0 +1,10 @@
+{
+  "name": "azure-chat-lite-server",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "python main.py",
+    "python-install": "pip install -r requirements.txt"
+  }
+}
