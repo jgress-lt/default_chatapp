@@ -1,8 +1,8 @@
-# Azure OpenAI Chat Application
+# Azure OpenAI Chat Application with Semantic Kernel
 
-A modern, lightweight chat application that connects to Azure OpenAI's Chat Completions API with real-time streaming responses. Built with React, TypeScript, and FastAPI.
+A modern chat application that uses Microsoft Semantic Kernel for AI orchestration with Azure OpenAI. Features automatic function calling, real-time streaming responses, and comprehensive logging. Built with React, TypeScript, FastAPI, and Semantic Kernel.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 default_chatapp/
@@ -14,31 +14,40 @@ default_chatapp/
 │   ├── public/            # Static assets
 │   ├── package.json       # Client dependencies
 │   └── vite.config.ts     # Vite configuration
-├── server/                 # Backend FastAPI application
+├── server/                 # Backend FastAPI application with Semantic Kernel
 │   ├── app/
-│   │   ├── routers/       # API route handlers (chat, health)
-│   │   ├── services/      # Business logic (Azure OpenAI integration)
+│   │   ├── routers/       # API route handlers (chat, health, kernel)
+│   │   ├── services/      # Semantic Kernel integration services
 │   │   ├── middleware/    # Request logging middleware
-│   │   └── config/        # Configuration (logging)
+│   │   ├── config/        # Configuration (logging)
+│   │   └── kernel/        # Semantic Kernel components
+│   │       ├── config/    # Kernel configuration
+│   │       ├── plugins/   # Function plugins (TestPlugin)
+│   │       └── services/  # Enhanced kernel services
 │   ├── main.py            # FastAPI entry point
 │   ├── requirements.txt   # Python dependencies
 │   └── .env.local         # Environment variables
 ├── package.json           # Root workspace configuration
-└── README.md
+├── README.md
+├── TEST_FUNCTION_README.md # Function calling documentation
+└── SEMANTIC_KERNEL_README.md # Semantic Kernel guide
 ```
 
-## ✨ Features
+## Features
 
-- 🎨 **Beautiful UI**: Modern design with light/dark theme toggle
-- ⚡ **Real-time Streaming**: Live response streaming from Azure OpenAI
-- 💾 **Local Storage**: Chat history persisted in browser
-- 🎯 **Smart Input**: Enter to send, Shift+Enter for new lines
-- 🗑️ **Clear History**: One-click chat history clearing
-- 🔧 **Clean Architecture**: Modular service-based design
-- 📊 **Request Logging**: Comprehensive logging to Cosmos DB
-- 🛡️ **Error Handling**: Robust error handling and recovery
+- **Modern UI**: Clean design with light/dark theme toggle
+- **Real-time Streaming**: Live response streaming from Azure OpenAI via Semantic Kernel
+- **Automatic Function Calling**: AI automatically detects when to call functions based on user intent
+- **Local Storage**: Chat history persisted in browser
+- **Smart Input**: Enter to send, Shift+Enter for new lines
+- **Clear History**: One-click chat history clearing
+- **Semantic Kernel Integration**: Microsoft's AI orchestration framework for enhanced capabilities
+- **Function Plugins**: Extensible plugin system for custom functions
+- **Comprehensive Logging**: Detailed logging of user questions, function calls, and AI responses
+- **Request Tracking**: Each request gets a unique ID for tracking in logs
+- **Error Handling**: Robust error handling and recovery
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend (`/client`)
 - **React 18** with TypeScript
@@ -49,18 +58,54 @@ default_chatapp/
 
 ### Backend (`/server`)
 - **FastAPI** (Python) for high-performance API
+- **Microsoft Semantic Kernel** for AI orchestration and function calling
 - **Azure OpenAI SDK** for AI integration
 - **Azure Cosmos DB** for chat and request logging
 - **Uvicorn** ASGI server
 
-## 🚀 Prerequisites
+### AI & Function Calling
+- **Semantic Kernel Framework** for automatic function calling
+- **Function Plugins** with @kernel_function decorators
+- **TestPlugin** with time, math, and statistics functions
+- **Enhanced Kernel Service** for plugin management
+- **Automatic Intent Detection** for function triggering
+
+## Prerequisites
 
 - **Node.js 18+** and npm
 - **Python 3.8+**
 - **Azure OpenAI** resource with API key
 - **Azure Cosmos DB** account (for logging and chat history)
 
-## ⚙️ Setup
+## Function Calling Demo
+
+This application includes a **TestPlugin** that demonstrates automatic function calling:
+
+### Available Functions
+- **get_current_time()** - Triggers when users ask about time/date
+  - "What time is it?"
+  - "What's the current date?"
+  - "Show me the timestamp"
+
+- **calculate_simple_math()** - Triggers when users ask for math calculations
+  - "What's 15 + 27?"
+  - "Can you multiply 8 by 12?"
+  - "Divide 100 by 4"
+
+- **get_plugin_stats()** - Triggers when users ask about plugin usage
+  - "How many times have functions been called?"
+  - "Show me plugin statistics"
+
+### How It Works
+1. User asks a question in natural language
+2. AI analyzes the intent using function descriptions
+3. Semantic Kernel automatically calls the appropriate function
+4. Function executes and returns result
+5. AI incorporates the result into a natural response
+
+No manual API calls needed - everything is automatic based on user intent!
+
+## Setup
 
 ### 1. Environment Configuration
 
@@ -106,7 +151,7 @@ cd client && npm run dev     # Frontend on http://localhost:3000
 cd server && python main.py # Backend on http://localhost:3001
 ```
 
-## 📜 Development Scripts
+## Development Scripts
 
 ### Root Directory Commands
 ```bash
@@ -134,20 +179,24 @@ cd server
 python main.py          # Start FastAPI server
 ```
 
-## 🎯 Usage
+## Usage
 
 1. **Send Messages**: Type your message and press Enter to send
 2. **Multi-line Input**: Use Shift+Enter to create new lines
 3. **Clear History**: Click the trash icon to clear chat history
 4. **Theme Toggle**: Click the theme button to switch between light/dark modes
-5. **Request Tracking**: Each request gets a unique ID for tracking in logs
+5. **Function Calling**: Ask questions like "What time is it?" or "What's 5+3?" to see automatic function calling
+6. **Request Tracking**: Each request gets a unique ID for tracking in logs
+7. **View Logs**: Check the server terminal to see detailed logging of user questions and function calls
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Core Endpoints
 - `GET /` - Root health check
 - `GET /health` - Detailed health status with timestamp
-- `POST /api/chat` - Stream chat completions from Azure OpenAI
+- `POST /api/chat` - Stream chat completions from Azure OpenAI with automatic function calling
+- `GET /api/kernel/status` - Semantic Kernel status and plugin information
+- `GET /api/kernel/health` - Kernel health check
 
 ### Request Format
 ```json
@@ -171,10 +220,16 @@ data: {"choices": [{"delta": {"content": " doing well"}}]}
 data: [DONE]
 ```
 
-## 🏗️ Architecture
+## Architecture
+
+### Semantic Kernel Integration (`/server/app/kernel/`)
+- **`config/kernel_config.py`** - Kernel initialization and Azure OpenAI service configuration
+- **`plugins/test_plugin.py`** - TestPlugin with @kernel_function decorated methods
+- **`services/enhanced_kernel_service.py`** - Plugin management and kernel enhancement
+- **`services/chat_service.py`** - Semantic Kernel chat service with function calling
 
 ### Frontend Service Layer (`/client/src/services/`)
-- **`AzureOpenAIService`** - Handles streaming communication with Azure OpenAI API
+- **`AzureOpenAIService`** - Handles streaming communication with backend API
 - **`ChatStorageService`** - Manages local storage persistence for chat history  
 - **`UtilityService`** - Common utility functions (ID generation, etc.)
 
@@ -185,19 +240,22 @@ data: [DONE]
 - **`Spinner`** - Loading animations and indicators
 
 ### Backend Architecture (`/server/app/`)
-- **`routers/`** - API route handlers for chat and health endpoints
-- **`services/`** - Business logic for Azure OpenAI integration
+- **`routers/`** - API route handlers for chat, health, and kernel endpoints
+- **`services/`** - Semantic Kernel integration and business logic
 - **`middleware/`** - Request logging and tracking middleware
 - **`config/`** - Application configuration and logging setup
 
-### Data Flow
-1. **User Input** → Chat component captures and validates
-2. **API Request** → AzureOpenAIService sends to FastAPI backend  
-3. **Azure OpenAI** → Backend streams response from Azure OpenAI
-4. **Real-time Updates** → Frontend parses SSE stream and updates UI
-5. **Persistence** → Chat history saved to localStorage and requests logged to Cosmos DB
+### Function Calling Flow
+1. **User Input** → Chat component captures and validates message
+2. **API Request** → Frontend sends to FastAPI backend with Semantic Kernel
+3. **Intent Analysis** → AI analyzes message for function calling opportunities
+4. **Automatic Function Calling** → Semantic Kernel automatically calls appropriate functions
+5. **Function Execution** → Plugin functions execute and return results
+6. **AI Response** → AI incorporates function results into natural language response
+7. **Real-time Updates** → Frontend parses SSE stream and updates UI
+8. **Logging** → All function calls and results logged to console and Cosmos DB
 
-## 🚀 Deployment
+## Deployment
 
 ### Frontend Deployment
 ```bash
@@ -223,7 +281,7 @@ AZURE_COSMOS_DB_NO_SQL_KEY=your-cosmos-key
 LOG_LEVEL=WARNING
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### Azure OpenAI Settings
 - **Endpoint**: Your Azure OpenAI resource endpoint URL
@@ -257,7 +315,7 @@ theme: {
 }
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -285,15 +343,22 @@ theme: {
    - For Python: `cd server && pip install -r requirements.txt`
    - Clear node_modules and reinstall if needed
 
+6. **Function Calling Issues**
+   - Check server logs for plugin registration messages
+   - Verify TestPlugin is loaded correctly
+   - Test with simple questions like "What time is it?"
+   - Check Semantic Kernel configuration
+
 ### Health Checks
 - **Backend Health**: Visit http://localhost:3001/health
 - **Root Endpoint**: Visit http://localhost:3001/ 
+- **Kernel Status**: Visit http://localhost:3001/api/kernel/status
 - **Frontend**: Visit http://localhost:3000
 
 ### Debug Logging
 Enable debug logging by setting `LOG_LEVEL=DEBUG` in `.env.local`
 
-## 📋 Dependencies
+## Dependencies
 
 ### Frontend Dependencies
 - React 18, TypeScript, Vite
@@ -301,10 +366,16 @@ Enable debug logging by setting `LOG_LEVEL=DEBUG` in `.env.local`
 - All managed via npm
 
 ### Backend Dependencies  
-- FastAPI, Uvicorn, Azure OpenAI SDK
-- Azure Cosmos DB SDK, python-dotenv
+- FastAPI, Uvicorn, Microsoft Semantic Kernel
+- Azure OpenAI SDK, Azure Cosmos DB SDK
+- python-dotenv, semantic-kernel
 - All listed in `requirements.txt`
 
-## 📄 License
+## Additional Documentation
+
+- **TEST_FUNCTION_README.md** - Detailed guide to automatic function calling
+- **SEMANTIC_KERNEL_README.md** - Semantic Kernel integration guide
+
+## License
 
 MIT License - see LICENSE file for details.

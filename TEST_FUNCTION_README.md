@@ -81,42 +81,42 @@ The magic happens through:
 
 This replaces the need for manual `/invoke` endpoints - the AI now decides when and how to call functions based on user intent!
 
-## 📊 Enhanced Logging
+## Enhanced Logging
 
 The system now includes comprehensive logging to track user questions and function calls in real-time:
 
 ### User Activity Logging
 ```
-🔵 USER QUESTION - Request ID: abc123, Content: 'What time is it?'
-🤖 FUNCTION CALLING ENABLED - Auto function calling active for this request
+USER QUESTION - Request ID: abc123, Content: 'What time is it?'
+FUNCTION CALLING ENABLED - Auto function calling active for this request
 ```
 
 ### Function Call Logging
 ```
-🟢 FUNCTION CALLED: get_current_time() - Call #1, Format: full
-✅ FUNCTION RESULT: get_current_time() returned 'Current full: 2025-07-15 16:33:14'
+FUNCTION CALLED: get_current_time() - Call #1, Format: full
+FUNCTION RESULT: get_current_time() returned 'Current full: 2025-07-15 16:33:14'
 ```
 
 ### Plugin Registration Logging
 ```
-🔌 PLUGIN REGISTERED: TestPlugin with functions: ['get_current_time', 'calculate_simple_math', 'get_plugin_stats']
-✅ Default plugins registered successfully
+PLUGIN REGISTERED: TestPlugin with functions: ['get_current_time', 'calculate_simple_math', 'get_plugin_stats']
+Default plugins registered successfully
 ```
 
 ### Conversation Context Logging
 ```
-💬 CONVERSATION CONTEXT: 3 total messages in history
-📊 MESSAGE BREAKDOWN: 2 user messages, 1 assistant messages
+CONVERSATION CONTEXT: 3 total messages in history
+MESSAGE BREAKDOWN: 2 user messages, 1 assistant messages
 ```
 
 ### Service Status Logging
 ```
-🔥 SEMANTIC KERNEL SERVICE READY
-⚡ Auto Function Calling: ENABLED
-📝 Available Test Functions:
-   🕐 get_current_time() - Triggers on time/date questions
-   🧮 calculate_simple_math() - Triggers on math questions  
-   📊 get_plugin_stats() - Triggers on plugin usage questions
+SEMANTIC KERNEL SERVICE READY
+Auto Function Calling: ENABLED
+Available Test Functions:
+   get_current_time() - Triggers on time/date questions
+   calculate_simple_math() - Triggers on math questions  
+   get_plugin_stats() - Triggers on plugin usage questions
 ```
 
 All logs appear in the terminal when you run the server, making it easy to see what users are asking and which functions get automatically triggered!
