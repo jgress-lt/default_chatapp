@@ -50,7 +50,7 @@ def create_app() -> FastAPI:
 
     # Add request logging middleware (before CORS)
     logger.info("Adding request logging middleware")
-    app.add_middleware(RequestLoggingMiddleware, cosmos_container=request_logs_container)
+    app.add_middleware(RequestLoggingMiddleware)
 
     logger.info("Adding CORS middleware")
     app.add_middleware(

@@ -45,6 +45,8 @@ default_chatapp/
 - **Semantic Kernel Integration**: Microsoft's AI orchestration framework for enhanced capabilities
 - **Function Plugins**: Extensible plugin system for custom functions
 - **Comprehensive Logging**: Detailed logging of user questions, function calls, and AI responses
+- **Full Response Capture**: Complete response content logged to console for both streaming and non-streaming requests
+- **Cosmos DB Chat Logging**: User questions and AI responses automatically stored in Cosmos DB for analytics
 - **Request Tracking**: Each request gets a unique ID for tracking in logs
 - **Error Handling**: Robust error handling and recovery
 
@@ -224,6 +226,56 @@ Try these questions to see function calling in action:
 - **Frontend**: Service parser handles function metadata separately from content
 - **UI**: React component displays function information with animations
 
+## Chat Logging & Analytics
+
+The application includes comprehensive chat logging to Cosmos DB for analytics, debugging, and conversation tracking.
+
+### Automatic Chat Storage
+
+Every conversation is automatically logged to Cosmos DB with the following data:
+
+#### Chat Request Documents
+- **User Question**: Complete user input for each request
+- **Conversation Context**: Full message history leading to the question
+- **Request Settings**: Max tokens, temperature, streaming mode
+- **Metadata**: Message counts, conversation length, timestamps
+
+#### Chat Response Documents  
+- **AI Response**: Complete response content from the AI
+- **Performance Metrics**: Processing time, chunk count, response length
+- **Function Calls**: Detailed information about any functions called during processing
+- **Execution Data**: Timestamps, processing duration, streaming vs non-streaming
+
+#### Document Structure
+```json
+{
+  "id": "chat_request_12345678",
+  "type": "chat_request",
+  "request_id": "12345678-1234-5678-9012-123456789abc", 
+  "user_question": "What time is it?",
+  "full_conversation": [...],
+  "request_settings": {
+    "max_tokens": 1000,
+    "temperature": 0.7,
+    "is_streaming": true
+  }
+}
+```
+
+### Benefits of Chat Logging
+
+1. **Analytics**: Track conversation patterns and user behavior
+2. **Debugging**: Identify issues with specific requests using request IDs
+3. **Performance Monitoring**: Analyze response times and processing metrics
+4. **Function Usage**: Monitor which AI functions are being called most frequently
+5. **Content Analysis**: Review conversation quality and AI response accuracy
+
+### Data Privacy
+
+- User questions and AI responses are stored in your own Cosmos DB instance
+- Data remains within your Azure subscription and geographic region
+- No data is shared with external services beyond Azure OpenAI for processing
+
 ## Usage
 
 1. **Send Messages**: Type your message and press Enter to send
@@ -286,8 +338,8 @@ data: [DONE]
 
 ### Backend Architecture (`/server/app/`)
 - **`routers/`** - API route handlers for chat, health, and kernel endpoints
-- **`services/`** - Semantic Kernel integration and business logic
-- **`middleware/`** - Request logging and tracking middleware
+- **`services/`** - Chat logging service and Semantic Kernel integration
+- **`middleware/`** - HTTP request logging middleware (console only)
 - **`config/`** - Application configuration and logging setup
 
 ### Function Calling Flow
@@ -298,7 +350,7 @@ data: [DONE]
 5. **Function Execution** → Plugin functions execute and return results
 6. **AI Response** → AI incorporates function results into natural language response
 7. **Real-time Updates** → Frontend parses SSE stream and updates UI
-8. **Logging** → All function calls and results logged to console and Cosmos DB
+8. **Chat Logging** → User questions and AI responses logged to Cosmos DB via chat service
 
 ## Deployment
 
@@ -338,12 +390,36 @@ LOG_LEVEL=WARNING
 - **URL**: Your Cosmos DB account endpoint
 - **Key**: Primary or secondary key for authentication
 - **Database**: "chatHistoryDb" (created automatically)
-- **Containers**: "chatHistory" and "requestLogs" (created automatically)
+- **Containers**: 
+  - "chatHistory" - User messages and chat history (not currently used)
+  - "requestLogs" - Chat conversations and AI responses (used by chat service)
+- **Chat Logging**: Automatic storage of user questions and AI responses via dedicated chat logging service
+- **Analytics**: Complete conversation data for performance analysis and debugging
 
 ### Logging Configuration
 - **LOG_LEVEL**: INFO, DEBUG, WARNING, ERROR, CRITICAL
-- Console-only logging (no local files)
-- Request/response logging to Cosmos DB with unique request IDs
+- **Console Response Capture**: Full AI responses printed to console for both streaming and non-streaming requests
+- **Cosmos DB Chat Logging**: Complete conversations automatically stored in Cosmos DB via chat service
+- **HTTP Request Logging**: Basic HTTP request/response logging to console via middleware
+- **Request Tracking**: Each request gets unique ID for correlation across logs
+- **Function Call Logging**: Detailed logging when AI automatically calls functions
+- **Performance Metrics**: Processing time, chunk count, and response length tracking
+
+#### Cosmos DB Chat Storage
+The chat service automatically stores complete conversations in Cosmos DB with separate documents for:
+- **Chat Requests**: User questions, conversation context, and request settings
+- **Chat Responses**: AI responses, processing metrics, and function call details
+
+#### Response Logging Format
+```
+=== STREAMING RESPONSE COMPLETE ===
+Request ID: 12345678-1234-5678-9012-123456789abc
+Full Response: [Complete response content]
+Response Length: 245 characters
+Processing Time: 1.23s
+Chunks Processed: 15
+==================================================
+```
 
 ### UI Customization
 Modify theme colors in `client/tailwind.config.js`:
@@ -401,7 +477,10 @@ theme: {
 - **Frontend**: Visit http://localhost:3000
 
 ### Debug Logging
-Enable debug logging by setting `LOG_LEVEL=DEBUG` in `.env.local`
+- **Enable verbose logging**: Set `LOG_LEVEL=DEBUG` in `.env.local`
+- **Response capture**: Full AI responses are automatically printed to console for all requests
+- **Function call tracking**: All AI function calls are logged with execution details
+- **Request correlation**: Each request gets a unique ID for tracking across logs
 
 ## Dependencies
 

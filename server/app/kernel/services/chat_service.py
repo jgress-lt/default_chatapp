@@ -21,6 +21,14 @@ from app.kernel.services.enhanced_kernel_service import get_enhanced_kernel_serv
 # Configure logging
 log = logging.getLogger("backend.app")
 
+# Import chat logging service for Cosmos DB logging
+try:
+    from app.services.chat_logging_service import get_chat_logging_service
+    CHAT_LOGGING_AVAILABLE = True
+except ImportError:
+    log.warning("Chat logging service not available - Cosmos DB chat logging disabled")
+    CHAT_LOGGING_AVAILABLE = False
+
 class SemanticKernelChatService:
     """
     Chat service using Semantic Kernel for Azure OpenAI integration.
@@ -86,6 +94,22 @@ class SemanticKernelChatService:
         start_time = time.time()
         chunk_count = 0
         
+        # Initialize chat logging service for Cosmos DB logging
+        chat_logger = None
+        if CHAT_LOGGING_AVAILABLE:
+            try:
+                chat_logger = get_chat_logging_service()
+                # Log the incoming request with user question
+                await chat_logger.log_chat_request(
+                    request_id=request_id,
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    is_streaming=True
+                )
+            except Exception as e:
+                log.warning("Failed to initialize chat logging for Cosmos DB: %s", e)
+        
         # Initialize function call tracking
         try:
             from app.kernel.services.function_call_tracker import get_function_call_tracker
@@ -126,6 +150,9 @@ class SemanticKernelChatService:
                 kernel=self.kernel,
             )
             
+            # Track full response for logging
+            full_response_content = ""
+            
             async for chunk_list in stream:
                 chunk_count += 1
                 
@@ -136,6 +163,9 @@ class SemanticKernelChatService:
                 chunk = chunk_list[0]  # Get the first (and usually only) chunk
                 
                 if chunk.content:
+                    # Accumulate full response content for logging
+                    full_response_content += chunk.content
+                    
                     # Format response to match OpenAI streaming format
                     payload = {
                         "choices": [
@@ -181,6 +211,40 @@ class SemanticKernelChatService:
             yield b"data: [DONE]\n\n"
             
             processing_time = time.time() - start_time
+            
+            # Log the full response content to console
+            log.info(
+                "FULL STREAMING RESPONSE - Request ID: %s, Content: '%s'",
+                request_id,
+                full_response_content[:1000] + "..." if len(full_response_content) > 1000 else full_response_content
+            )
+            print(f"\n=== STREAMING RESPONSE COMPLETE ===")
+            print(f"Request ID: {request_id}")
+            print(f"Full Response: {full_response_content}")
+            print(f"Response Length: {len(full_response_content)} characters")
+            print(f"Processing Time: {processing_time:.2f}s")
+            print(f"Chunks Processed: {chunk_count}")
+            print("=" * 50)
+            
+            # Log the complete response to Cosmos DB
+            if chat_logger:
+                try:
+                    # Get function call summary if available
+                    function_calls_summary = None
+                    if tracker and tracker.has_function_calls():
+                        function_calls_summary = tracker.get_summary()
+                    
+                    await chat_logger.log_chat_response(
+                        request_id=request_id,
+                        response_content=full_response_content,
+                        processing_time=processing_time,
+                        chunk_count=chunk_count,
+                        function_calls=function_calls_summary,
+                        is_streaming=True
+                    )
+                except Exception as e:
+                    log.error("Failed to log chat response to Cosmos DB: %s", e)
+            
             log.info(
                 "Streaming completed - Request ID: %s, Chunks: %d, Time: %.2fs",
                 request_id,
@@ -236,6 +300,22 @@ class SemanticKernelChatService:
         
         start_time = time.time()
         
+        # Initialize chat logging service for Cosmos DB logging
+        chat_logger = None
+        if CHAT_LOGGING_AVAILABLE:
+            try:
+                chat_logger = get_chat_logging_service()
+                # Log the incoming request with user question
+                await chat_logger.log_chat_request(
+                    request_id=request_id,
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    is_streaming=False
+                )
+            except Exception as e:
+                log.warning("Failed to initialize chat logging for Cosmos DB: %s", e)
+        
         try:
             # Log user questions for monitoring
             user_messages = [msg for msg in messages if msg.get("role") == "user"]
@@ -274,6 +354,34 @@ class SemanticKernelChatService:
                 content = ""
             
             processing_time = time.time() - start_time
+            
+            # Log the full response content to console
+            log.info(
+                "FULL NON-STREAMING RESPONSE - Request ID: %s, Content: '%s'",
+                request_id,
+                content[:1000] + "..." if len(content) > 1000 else content
+            )
+            print(f"\n=== NON-STREAMING RESPONSE COMPLETE ===")
+            print(f"Request ID: {request_id}")
+            print(f"Full Response: {content}")
+            print(f"Response Length: {len(content)} characters")
+            print(f"Processing Time: {processing_time:.2f}s")
+            print("=" * 50)
+            
+            # Log the complete response to Cosmos DB
+            if chat_logger:
+                try:
+                    await chat_logger.log_chat_response(
+                        request_id=request_id,
+                        response_content=content,
+                        processing_time=processing_time,
+                        chunk_count=None,  # Not applicable for non-streaming
+                        function_calls=None,  # TODO: Add function call tracking for non-streaming
+                        is_streaming=False
+                    )
+                except Exception as e:
+                    log.error("Failed to log chat response to Cosmos DB: %s", e)
+            
             log.info(
                 "Completion successful - Request ID: %s, Time: %.2fs, Response length: %d",
                 request_id,
